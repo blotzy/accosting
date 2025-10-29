@@ -52,7 +52,7 @@ const CONFIG = {
     minRockGap: 24,
     archChance: 0.12,  // Reduced from 0.18
     bridgeChance: 0.08,  // Reduced from 0.12
-    rockScale: [6, 26],
+    rockScale: [5, 32],  // Increased range for more size variety in letter rocks
     cellSize: 18,
     lodDistances: [0, 120, 240],
     drawDistance: 480,
@@ -86,6 +86,11 @@ const CONFIG = {
     lowFpsDuration: 3,
     highFpsDuration: 5,
     lodSteps: 2,
+  },
+  audio: {
+    masterVolume: 0.5,
+    weeThreshold: -30,  // Vertical velocity threshold to trigger "WEEEEE"
+    weeCooldown: 3,  // Seconds between WEEEEE sounds
   },
 };
 

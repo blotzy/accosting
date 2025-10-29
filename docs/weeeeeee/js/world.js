@@ -269,7 +269,8 @@ function generateAnchors(rng, count, cfg, centerX = 0, centerY = 24) {
 function createRock(ctx, chunk, anchor, rng) {
   const cfg = ctx.config.world;
   const scale = rng.nextRange(cfg.rockScale[0], cfg.rockScale[1]);
-  const geometries = buildRockGeometries(scale, rng);
+  const letter = getRandomLetter(rng);
+  const geometries = buildLetterGeometries(scale, letter);
   const material = ctx.world.materials[rng.nextInt(0, ctx.world.materials.length - 1)];
 
   const lod = new THREE.LOD();
@@ -286,10 +287,175 @@ function createRock(ctx, chunk, anchor, rng) {
     lod,
     position: worldPosition,
     radius: scale * 0.6,
-    type: 'rock',
+    type: 'letter',
     cells: [],
   };
   return obstacle;
+}
+
+// Letters to use for obstacles (excluding M and W)
+const OBSTACLE_LETTERS = 'ABCDEFGHIJKLNOPQRSTUVXYZ';
+
+function getRandomLetter(rng) {
+  const index = rng.nextInt(0, OBSTACLE_LETTERS.length - 1);
+  return OBSTACLE_LETTERS[index];
+}
+
+function buildLetterGeometries(scale, letter) {
+  // Create blocky 3D letter using cubes with variable depth
+  const blockSize = scale * 0.3;
+
+  // Vary the depth of the letter (2-4 blocks deep)
+  const depth = Math.floor(2 + Math.random() * 3); // 2, 3, or 4 blocks deep
+  const baseGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+
+  // Simple blocky letter patterns (5x5 grid)
+  const patterns = getLetterPattern(letter);
+
+  // Debug: log first few letters
+  if (Math.random() < 0.01) {
+    console.log('Creating letter obstacle:', letter, 'depth:', depth, 'blocks:', patterns.flat().filter(x => x === 1).length);
+  }
+
+  const geometries = [];
+
+  // Create the letter shape with depth
+  for (let z = 0; z < depth; z++) {
+    for (let y = 0; y < 5; y++) {
+      for (let x = 0; x < 5; x++) {
+        if (patterns[y] && patterns[y][x] === 1) {
+          const clonedGeo = baseGeometry.clone();
+          const matrix = new THREE.Matrix4();
+          matrix.makeTranslation(
+            (x - 2) * blockSize,
+            (2 - y) * blockSize,
+            (z - depth / 2) * blockSize
+          );
+          clonedGeo.applyMatrix4(matrix);
+          geometries.push(clonedGeo);
+        }
+      }
+    }
+  }
+
+  // Merge all the block geometries
+  let merged;
+  if (geometries.length === 0) {
+    // Fallback if no blocks (shouldn't happen)
+    merged = baseGeometry.clone();
+  } else if (geometries.length === 1) {
+    merged = geometries[0];
+  } else {
+    // Manual merge since BufferGeometryUtils might not be available
+    merged = mergeGeometriesManual(geometries);
+  }
+
+  // Return same geometry for all LOD levels
+  return {
+    high: merged,
+    mid: merged.clone(),
+    low: merged.clone()
+  };
+}
+
+function getLetterPattern(letter) {
+  // Simple 5x5 block patterns for letters (1 = block, 0 = empty)
+  const patterns = {
+    'A': [[0,1,1,1,0], [1,0,0,0,1], [1,1,1,1,1], [1,0,0,0,1], [1,0,0,0,1]],
+    'B': [[1,1,1,1,0], [1,0,0,0,1], [1,1,1,1,0], [1,0,0,0,1], [1,1,1,1,0]],
+    'C': [[0,1,1,1,0], [1,0,0,0,1], [1,0,0,0,0], [1,0,0,0,1], [0,1,1,1,0]],
+    'D': [[1,1,1,1,0], [1,0,0,0,1], [1,0,0,0,1], [1,0,0,0,1], [1,1,1,1,0]],
+    'E': [[1,1,1,1,1], [1,0,0,0,0], [1,1,1,1,0], [1,0,0,0,0], [1,1,1,1,1]],
+    'F': [[1,1,1,1,1], [1,0,0,0,0], [1,1,1,1,0], [1,0,0,0,0], [1,0,0,0,0]],
+    'G': [[0,1,1,1,0], [1,0,0,0,0], [1,0,1,1,1], [1,0,0,0,1], [0,1,1,1,0]],
+    'H': [[1,0,0,0,1], [1,0,0,0,1], [1,1,1,1,1], [1,0,0,0,1], [1,0,0,0,1]],
+    'I': [[1,1,1,1,1], [0,0,1,0,0], [0,0,1,0,0], [0,0,1,0,0], [1,1,1,1,1]],
+    'J': [[1,1,1,1,1], [0,0,0,1,0], [0,0,0,1,0], [1,0,0,1,0], [0,1,1,0,0]],
+    'K': [[1,0,0,0,1], [1,0,0,1,0], [1,1,1,0,0], [1,0,0,1,0], [1,0,0,0,1]],
+    'L': [[1,0,0,0,0], [1,0,0,0,0], [1,0,0,0,0], [1,0,0,0,0], [1,1,1,1,1]],
+    'N': [[1,0,0,0,1], [1,1,0,0,1], [1,0,1,0,1], [1,0,0,1,1], [1,0,0,0,1]],
+    'O': [[0,1,1,1,0], [1,0,0,0,1], [1,0,0,0,1], [1,0,0,0,1], [0,1,1,1,0]],
+    'P': [[1,1,1,1,0], [1,0,0,0,1], [1,1,1,1,0], [1,0,0,0,0], [1,0,0,0,0]],
+    'Q': [[0,1,1,1,0], [1,0,0,0,1], [1,0,0,0,1], [1,0,0,1,0], [0,1,1,0,1]],
+    'R': [[1,1,1,1,0], [1,0,0,0,1], [1,1,1,1,0], [1,0,0,1,0], [1,0,0,0,1]],
+    'S': [[0,1,1,1,1], [1,0,0,0,0], [0,1,1,1,0], [0,0,0,0,1], [1,1,1,1,0]],
+    'T': [[1,1,1,1,1], [0,0,1,0,0], [0,0,1,0,0], [0,0,1,0,0], [0,0,1,0,0]],
+    'U': [[1,0,0,0,1], [1,0,0,0,1], [1,0,0,0,1], [1,0,0,0,1], [0,1,1,1,0]],
+    'V': [[1,0,0,0,1], [1,0,0,0,1], [1,0,0,0,1], [0,1,0,1,0], [0,0,1,0,0]],
+    'X': [[1,0,0,0,1], [0,1,0,1,0], [0,0,1,0,0], [0,1,0,1,0], [1,0,0,0,1]],
+    'Y': [[1,0,0,0,1], [0,1,0,1,0], [0,0,1,0,0], [0,0,1,0,0], [0,0,1,0,0]],
+    'Z': [[1,1,1,1,1], [0,0,0,1,0], [0,0,1,0,0], [0,1,0,0,0], [1,1,1,1,1]],
+  };
+
+  return patterns[letter] || patterns['O']; // Default to O if letter not found
+}
+
+function mergeGeometriesManual(geometries) {
+  // Manual merge function
+  let totalVertices = 0;
+  let totalIndices = 0;
+
+  // Count totals
+  geometries.forEach(geo => {
+    totalVertices += geo.attributes.position.count;
+    if (geo.index) {
+      totalIndices += geo.index.count;
+    }
+  });
+
+  // Allocate arrays
+  const positions = new Float32Array(totalVertices * 3);
+  const normals = new Float32Array(totalVertices * 3);
+  const indices = [];
+
+  let positionOffset = 0;
+  let vertexCount = 0;
+
+  // Merge each geometry
+  geometries.forEach(geo => {
+    const posAttr = geo.attributes.position;
+    const normAttr = geo.attributes.normal;
+
+    // Copy positions
+    for (let i = 0; i < posAttr.count; i++) {
+      const idx = (positionOffset + i) * 3;
+      positions[idx] = posAttr.getX(i);
+      positions[idx + 1] = posAttr.getY(i);
+      positions[idx + 2] = posAttr.getZ(i);
+    }
+
+    // Copy normals
+    if (normAttr) {
+      for (let i = 0; i < normAttr.count; i++) {
+        const idx = (positionOffset + i) * 3;
+        normals[idx] = normAttr.getX(i);
+        normals[idx + 1] = normAttr.getY(i);
+        normals[idx + 2] = normAttr.getZ(i);
+      }
+    }
+
+    // Copy indices with offset
+    if (geo.index) {
+      for (let i = 0; i < geo.index.count; i++) {
+        indices.push(geo.index.array[i] + positionOffset);
+      }
+    }
+
+    positionOffset += posAttr.count;
+  });
+
+  // Create merged geometry
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  merged.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+
+  if (indices.length > 0) {
+    merged.setIndex(indices);
+  }
+
+  merged.computeBoundingSphere();
+
+  return merged;
 }
 
 function buildRockGeometries(scale, rng) {

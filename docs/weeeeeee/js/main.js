@@ -4,6 +4,7 @@ import { setupUI, updateUI } from './ui.js';
 import { Scoring } from './scoring.js';
 import { autoScaleQualityTick } from './perf.js';
 import { getConfig } from './config.js';
+import { setupAudio, playWindSound, updateWindSound, playDingSound, playCrashSound, playWeeSound, stopAllSounds } from './audio.js';
 
 const config = getConfig();
 
@@ -28,6 +29,10 @@ export function setup() {
     highTimer: 0,
     step: 0,
   };
+  ctx.audioState = {
+    lastWeeTime: 0,
+    lastDingDistance: Infinity,
+  };
   ctx.actions = {
     startRun,
     pauseRun,
@@ -47,6 +52,7 @@ export function setup() {
   setupWorld(ctx);
   setupPlayer(ctx);
   setupUI(ctx);
+  setupAudio(ctx);
 
   window.addEventListener('resize', () => {
     ctx.camera.aspect = window.innerWidth / window.innerHeight;
@@ -71,6 +77,28 @@ function loop(t) {
     const nearest = getNearestDistance(ctx);
     const playerInfo = getPlayerInfo(ctx);
     ctx.scoring.tick(ctx.dt, nearest, playerInfo);
+
+    // Audio updates
+    updateWindSound(ctx, playerInfo.speed, playerInfo.verticalVelocity);
+
+    // Play ding for near misses
+    if (nearest < 6 && nearest > playerInfo.collisionRadius) {
+      if (nearest < ctx.audioState.lastDingDistance - 0.5) {
+        playDingSound(ctx, nearest);
+        ctx.audioState.lastDingDistance = nearest;
+      }
+    } else {
+      ctx.audioState.lastDingDistance = Infinity;
+    }
+
+    // Play WEEEEE when diving fast
+    const timeSinceLastWee = ctx.time - ctx.audioState.lastWeeTime;
+    if (playerInfo.verticalVelocity < config.audio.weeThreshold &&
+        timeSinceLastWee > config.audio.weeCooldown) {
+      playWeeSound(ctx);
+      ctx.audioState.lastWeeTime = ctx.time;
+    }
+
     if (nearest <= playerInfo.collisionRadius) {
       triggerCrash();
     }
@@ -85,19 +113,24 @@ function loop(t) {
 export function startRun() {
   ctx.running = true;
   ctx.paused = false;
+  playWindSound(ctx);
 }
 
 export function pauseRun() {
   ctx.paused = true;
+  stopAllSounds(ctx);
 }
 
 export function resumeRun() {
   ctx.paused = false;
+  playWindSound(ctx);
 }
 
 export function triggerCrash() {
   ctx.running = false;
   ctx.paused = false;
+  playCrashSound(ctx);
+  stopAllSounds(ctx);
   ctx.scoring.handleCrash();
 }
 
@@ -110,9 +143,12 @@ export function resetRun() {
   ctx.perf.lowTimer = 0;
   ctx.perf.highTimer = 0;
   ctx.perf.step = 0;
+  ctx.audioState.lastWeeTime = 0;
+  ctx.audioState.lastDingDistance = Infinity;
   setWorldQuality(ctx, 0);
   ctx.running = true;
   ctx.paused = false;
+  playWindSound(ctx);
 }
 
 setup();

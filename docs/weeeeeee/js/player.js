@@ -17,35 +17,57 @@ function damp(current, target, lambda, dt) {
   return THREE.MathUtils.lerp(current, target, THREE.MathUtils.clamp(t, 0, 1));
 }
 
+function createWShape() {
+  // Create a blocky 'W' shape using boxes
+  const blockGeom = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x7bdff2,
+    flatShading: true,
+    metalness: 0.3,
+    roughness: 0.6
+  });
+
+  const wGroup = new THREE.Group();
+
+  // Left vertical line (going down-right)
+  for (let i = 0; i < 5; i++) {
+    const block = new THREE.Mesh(blockGeom, material);
+    block.position.set(-1.5, 2 - i * 0.5, 0);
+    wGroup.add(block);
+  }
+
+  // Left valley (going up-right)
+  for (let i = 0; i < 3; i++) {
+    const block = new THREE.Mesh(blockGeom, material);
+    block.position.set(-1 + i * 0.5, -0.5 + i * 0.5, 0);
+    wGroup.add(block);
+  }
+
+  // Right valley (going down-right)
+  for (let i = 0; i < 3; i++) {
+    const block = new THREE.Mesh(blockGeom, material);
+    block.position.set(0.5 + i * 0.5, 1 - i * 0.5, 0);
+    wGroup.add(block);
+  }
+
+  // Right vertical line (going up)
+  for (let i = 0; i < 5; i++) {
+    const block = new THREE.Mesh(blockGeom, material);
+    block.position.set(2, -0.5 + i * 0.5, 0);
+    wGroup.add(block);
+  }
+
+  return wGroup;
+}
+
 export function setupPlayer(ctx) {
-  const rng = getGlobalRNG();
   const playerGroup = new THREE.Group();
 
-  const bodyGeom = new THREE.ConeGeometry(0.9, 3.8, 12);
-  bodyGeom.rotateX(Math.PI / 2);
-  const wingGeom = new THREE.PlaneGeometry(5.6, 2.4, 1, 1);
-  const tailGeom = new THREE.PlaneGeometry(1.4, 2.2, 1, 1);
+  // Create the W-shaped player
+  const wShape = createWShape();
+  wShape.scale.set(0.8, 0.8, 0.8);
+  playerGroup.add(wShape);
 
-  const colors = [0xffb347, 0x6fc3df, 0xf97068, 0x8ac926];
-  const materials = {
-    body: new THREE.MeshStandardMaterial({ color: rng.pick(colors), flatShading: true, metalness: 0.1, roughness: 0.6 }),
-    wing: new THREE.MeshStandardMaterial({ color: 0x1f6f8b, flatShading: true, metalness: 0.05, roughness: 0.8 }),
-  };
-
-  const body = new THREE.Mesh(bodyGeom, materials.body);
-  const leftWing = new THREE.Mesh(wingGeom, materials.wing);
-  leftWing.position.set(-2.1, 0, 0.5);
-  leftWing.rotateX(-Math.PI / 8);
-  leftWing.rotateY(Math.PI);
-  const rightWing = leftWing.clone();
-  rightWing.position.x *= -1;
-  rightWing.material = materials.wing;
-
-  const tail = new THREE.Mesh(tailGeom, materials.body);
-  tail.position.set(0, 1, -1.6);
-  tail.rotateX(-Math.PI / 12);
-
-  playerGroup.add(body, leftWing, rightWing, tail);
   ctx.scene.add(playerGroup);
 
   ctx.player = {
@@ -66,6 +88,8 @@ export function setupPlayer(ctx) {
     swayPhase: 0,
     cameraTarget: new THREE.Vector3(),
     lastPosition: new THREE.Vector3(),
+    exhaustParticles: [],  // Array to track exhaust particles
+    exhaustSpawnTimer: 0,
   };
 
   initInputListeners(ctx);
@@ -131,12 +155,85 @@ export function resetPlayer(ctx) {
   ctx.camera.lookAt(player.object.position);
 }
 
+function createEParticle(ctx, position) {
+  // Create a simple 'E' shape using text sprite
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const context = canvas.getContext('2d');
+  context.font = 'Bold 48px Arial';
+  context.fillStyle = '#b2f7ef';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText('E', 32, 32);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(1.5, 1.5, 1);
+  sprite.position.copy(position);
+
+  ctx.scene.add(sprite);
+
+  return {
+    sprite,
+    life: 1.0,  // Lifetime
+    velocity: new THREE.Vector3(
+      (Math.random() - 0.5) * 2,
+      (Math.random() - 0.5) * 2,
+      (Math.random() - 0.5) * 2
+    ),
+  };
+}
+
+function updateExhaust(ctx) {
+  const player = ctx.player;
+  const dt = ctx.dt;
+
+  // Spawn new E particles
+  player.exhaustSpawnTimer += dt;
+  if (player.exhaustSpawnTimer > 0.05) {  // Spawn every 50ms
+    player.exhaustSpawnTimer = 0;
+    const spawnPos = player.object.position.clone();
+
+    // Get the right direction relative to player orientation
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(player.object.quaternion);
+    spawnPos.addScaledVector(right, -1.5);  // Offset to the right side of the W (negative because of orientation)
+    spawnPos.z -= 1;  // Slightly behind
+
+    const particle = createEParticle(ctx, spawnPos);
+    player.exhaustParticles.push(particle);
+  }
+
+  // Update existing particles
+  for (let i = player.exhaustParticles.length - 1; i >= 0; i--) {
+    const p = player.exhaustParticles[i];
+    p.life -= dt * 0.8;  // Fade out over time
+
+    if (p.life <= 0) {
+      // Remove dead particle
+      ctx.scene.remove(p.sprite);
+      p.sprite.material.map.dispose();
+      p.sprite.material.dispose();
+      player.exhaustParticles.splice(i, 1);
+    } else {
+      // Update particle
+      p.sprite.position.add(p.velocity.clone().multiplyScalar(dt * 3));
+      p.sprite.material.opacity = p.life;
+      p.sprite.scale.set(1.5 * p.life, 1.5 * p.life, 1);
+    }
+  }
+}
+
 export function updatePlayer(ctx) {
   const player = ctx.player;
   const cfg = ctx.config.player;
   const dt = ctx.dt;
 
   player.elapsed += dt;
+
+  // Update exhaust trail
+  updateExhaust(ctx);
 
   const input = sampleInput(player);
   const sensitivity = player.settings.sensitivity || 1;
@@ -304,6 +401,7 @@ export function getPlayerInfo(ctx) {
     collisionRadius: player.collisionRadius,
     position: player.object.position,
     elapsed: player.elapsed,
+    verticalVelocity: player.verticalVelocity,
   };
 }
 
