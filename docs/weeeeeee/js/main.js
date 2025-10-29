@@ -1,5 +1,5 @@
-// Cache buster - update this number when you want to force users to get new JS files
-const V = '3';
+// Get the version parameter from this script's own URL
+const V = new URLSearchParams(new URL(import.meta.url).search).get('v') || '1';
 
 import { setupWorld, updateWorld, getNearestDistance, resetWorld, setWorldQuality } from `./world.js?v=${V}`;
 import { setupPlayer, updatePlayer, getPlayerInfo, resetPlayer } from `./player.js?v=${V}`;
