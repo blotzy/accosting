@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Winged Isles</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="hud">
+    <div class="row">
+      <span id="speed">SPD 0</span>
+      <span id="score">SCORE 0</span>
+      <span id="mult">x1.0</span>
+      <span id="streak">STREAK 0</span>
+    </div>
+    <button type="button" id="pauseBtn">Pause</button>
+  </div>
+
+  <div id="menu" class="panel" hidden>
+    <h1>Winged Isles</h1>
+    <button type="button" data-action="start">Start</button>
+    <button type="button" data-action="settings">Settings</button>
+    <button type="button" data-action="how">How to Play</button>
+  </div>
+
+  <div id="pauseOverlay" class="panel" hidden>
+    <h2>Paused</h2>
+    <button type="button" data-action="resume">Resume</button>
+    <button type="button" data-action="settings">Settings</button>
+    <button type="button" data-action="restart">Restart</button>
+    <button type="button" data-action="menu">Quit to Menu</button>
+  </div>
+
+  <div id="gameOver" class="panel" hidden>
+    <h2>Shattered</h2>
+    <p id="finalScore">Score: 0</p>
+    <p id="bestScore">Best: 0</p>
+    <div class="row">
+      <button type="button" data-action="restart">Retry</button>
+      <button type="button" data-action="menu">Menu</button>
+    </div>
+  </div>
+
+  <div id="settings" class="panel" hidden>
+    <h2>Settings</h2>
+    <form>
+      <fieldset>
+        <legend>Graphics</legend>
+        <label>
+          Draw Distance
+          <input type="range" name="drawDistance" min="200" max="600" step="20">
+        </label>
+        <label>
+          Post Effects
+          <input type="checkbox" name="postfx">
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Input</legend>
+        <label>
+          Sensitivity
+          <input type="range" name="sensitivity" min="0.5" max="2.0" step="0.1">
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Audio</legend>
+        <label>
+          Master Volume
+          <input type="range" name="volume" min="0" max="1" step="0.05">
+        </label>
+        <label>
+          Mute
+          <input type="checkbox" name="mute">
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Comfort</legend>
+        <label>
+          Reduce Motion
+          <input type="checkbox" name="reduceMotion">
+        </label>
+        <label>
+          High Contrast HUD
+          <input type="checkbox" name="highContrast">
+        </label>
+      </fieldset>
+      <div class="row">
+        <button type="submit">Save</button>
+        <button type="button" data-action="closeSettings">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="how" class="panel" hidden>
+    <h2>How to Play</h2>
+    <p>Fly close to floating isles without colliding to build your streak and multiplier. Brake when needed and use the wind to your advantage.</p>
+    <ul>
+      <li>Desktop: WASD or Arrow keys. Shift/Space to brake.</li>
+      <li>Mouse: Hold right-click to steer.</li>
+      <li>Mobile: Use the virtual joystick and brake button.</li>
+    </ul>
+    <button type="button" data-action="closeHow">Close</button>
+  </div>
+
+  <div id="touchControls" hidden>
+    <div id="joystick">
+      <div id="joystickHandle"></div>
+    </div>
+    <button type="button" id="touchBrake">Brake</button>
+  </div>
+
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.165/build/three.module.js";
+    window.THREE = THREE;
+  </script>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

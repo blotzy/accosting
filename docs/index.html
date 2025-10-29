@@ -1,1 +1,14 @@
-<html>Coming soon</html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="0; url=./game/" />
+    <title>Winged Isles</title>
+    <script>
+      (function () {
+        var path = window.location.pathname.replace(/\/?$/, "/");
+        if (!/\/game\/$/.test(path)) window.location.href = path + "game/";
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

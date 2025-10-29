@@ -1,0 +1,242 @@
+:root {
+  color-scheme: dark;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 20%, #1c2940 0%, #0b1220 70%);
+  color: #f0f6ff;
+}
+
+canvas#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  outline: none;
+  touch-action: none;
+}
+
+#hud {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+}
+
+#hud .row {
+  display: flex;
+  gap: 18px;
+  background: rgba(18, 26, 40, 0.75);
+  border: 1px solid rgba(120, 180, 220, 0.35);
+  border-radius: 12px;
+  padding: 8px 14px;
+  backdrop-filter: blur(6px);
+}
+
+#hud span {
+  min-width: 80px;
+  text-align: center;
+}
+
+#hud span.near {
+  color: #ffd166;
+  text-shadow: 0 0 12px rgba(255, 185, 71, 0.6);
+}
+
+#pauseBtn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(80, 140, 220, 0.8);
+  color: #09111f;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 280px;
+  max-width: 420px;
+  padding: 28px;
+  background: rgba(10, 16, 28, 0.92);
+  border: 1px solid rgba(120, 180, 220, 0.4);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  z-index: 20;
+}
+
+.panel[hidden] {
+  display: none !important;
+}
+
+.panel h1,
+.panel h2 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.panel button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #7bdff2 0%, #b2f7ef 100%);
+  color: #04101c;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.panel button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(123, 223, 242, 0.4);
+}
+
+.panel .row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.panel ul {
+  margin: 0;
+  padding: 0 16px;
+  text-align: left;
+  line-height: 1.4;
+}
+
+#settings form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#settings fieldset {
+  border: 1px solid rgba(120, 180, 220, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: left;
+}
+
+#settings label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 6px 0;
+  gap: 12px;
+  font-size: 0.85rem;
+}
+
+#settings input[type='range'] {
+  flex: 1;
+}
+
+#settings .row {
+  justify-content: space-between;
+}
+
+#touchControls {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 15;
+  pointer-events: none;
+}
+
+#joystick {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(30, 54, 90, 0.4);
+  border: 1px solid rgba(120, 180, 220, 0.35);
+  position: relative;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#joystickHandle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #7bdff2, #4a9fd1);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#touchBrake {
+  pointer-events: auto;
+  padding: 16px 24px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255, 204, 92, 0.9);
+  color: #09111f;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+body.high-contrast {
+  color: #ffffff;
+}
+
+body.high-contrast #hud .row {
+  background: rgba(5, 10, 18, 0.9);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+body.high-contrast .panel {
+  background: rgba(5, 10, 18, 0.96);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  #hud {
+    top: 12px;
+    font-size: 0.75rem;
+  }
+
+  #hud .row {
+    gap: 12px;
+    padding: 6px 10px;
+  }
+
+  .panel {
+    min-width: 240px;
+    padding: 22px;
+  }
+}
