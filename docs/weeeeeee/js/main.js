@@ -1,10 +1,13 @@
-import { setupWorld, updateWorld, getNearestDistance, resetWorld, setWorldQuality } from './world.js';
-import { setupPlayer, updatePlayer, getPlayerInfo, resetPlayer } from './player.js';
-import { setupUI, updateUI } from './ui.js';
-import { Scoring } from './scoring.js';
-import { autoScaleQualityTick } from './perf.js';
-import { getConfig } from './config.js';
-import { setupAudio, playWindSound, updateWindSound, playDingSound, playCrashSound, playWeeSound, stopAllSounds } from './audio.js';
+// Cache buster - update this number when you want to force users to get new JS files
+const V = '3';
+
+import { setupWorld, updateWorld, getNearestDistance, resetWorld, setWorldQuality } from `./world.js?v=${V}`;
+import { setupPlayer, updatePlayer, getPlayerInfo, resetPlayer } from `./player.js?v=${V}`;
+import { setupUI, updateUI } from `./ui.js?v=${V}`;
+import { Scoring } from `./scoring.js?v=${V}`;
+import { autoScaleQualityTick } from `./perf.js?v=${V}`;
+import { getConfig } from `./config.js?v=${V}`;
+import { setupAudio, playWindSound, updateWindSound, playDingSound, playCrashSound, playWeeSound, stopAllSounds } from `./audio.js?v=${V}`;
 
 const config = getConfig();
 
