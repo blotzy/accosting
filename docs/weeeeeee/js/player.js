@@ -377,16 +377,6 @@ function updateCamera(ctx, forward) {
   ctx.camera.position.z = desired.z;
   ctx.camera.position.y = THREE.MathUtils.lerp(ctx.camera.position.y, desired.y, 0.05);
 
-  // Debug: log player position and chunk count every 3 seconds
-  if (!ctx.lastCameraLog) ctx.lastCameraLog = 0;
-  ctx.lastCameraLog += ctx.dt;
-  if (ctx.lastCameraLog > 3) {
-    const dist = ctx.camera.position.distanceTo(target);
-    const chunkCount = ctx.world ? ctx.world.chunks.size : 0;
-    console.log('Player pos - X:', target.x.toFixed(1), 'Y:', target.y.toFixed(1), 'Z:', target.z.toFixed(1), '| Chunks:', chunkCount, '| Cam dist:', dist.toFixed(2));
-    ctx.lastCameraLog = 0;
-  }
-
   const lookTarget = target.clone().addScaledVector(forward, reduceMotion ? 6 : 12);
   ctx.camera.lookAt(lookTarget);
 }

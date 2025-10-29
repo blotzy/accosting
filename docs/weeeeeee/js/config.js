@@ -90,7 +90,7 @@ const CONFIG = {
   audio: {
     masterVolume: 0.5,
     weeThreshold: -30,  // Vertical velocity threshold to trigger "WEEEEE"
-    weeCooldown: 3,  // Seconds between WEEEEE sounds
+    weeCooldown: 8,  // Seconds between WEEEEE sounds
   },
 };
 

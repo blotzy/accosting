@@ -312,10 +312,6 @@ function buildLetterGeometries(scale, letter) {
   // Simple blocky letter patterns (5x5 grid)
   const patterns = getLetterPattern(letter);
 
-  // Debug: log first few letters
-  if (Math.random() < 0.01) {
-    console.log('Creating letter obstacle:', letter, 'depth:', depth, 'blocks:', patterns.flat().filter(x => x === 1).length);
-  }
 
   const geometries = [];
 

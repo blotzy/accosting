@@ -16,6 +16,9 @@ export function setupAudio(ctx) {
     muted: false,
   };
 
+  // Preload custom wee sound
+  loadWeeSound(ctx);
+
   // Resume audio context on user interaction (required by browsers)
   const resumeAudio = () => {
     if (audioContext.state === 'suspended') {
@@ -27,15 +30,67 @@ export function setupAudio(ctx) {
   document.addEventListener('keydown', resumeAudio, { once: true });
 }
 
+async function loadWeeSound(ctx) {
+  try {
+    const response = await fetch('sounds/wee.m4a');
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await ctx.audio.context.decodeAudioData(arrayBuffer);
+    ctx.audio.sounds.wee = audioBuffer;
+  } catch (error) {
+    console.warn('Failed to load custom wee sound, will use synthesized version:', error);
+  }
+}
+
 export function playWindSound(ctx) {
   if (!ctx.audio || ctx.audio.muted) return;
 
   const audio = ctx.audio;
   const ac = audio.context;
 
+  console.log('[Audio] playWindSound called, windPlaying:', audio.loops.windPlaying);
+
+  // Prevent starting a new wind sound if one is already playing
+  // Check if wind source exists and hasn't been stopped yet
+  if (audio.loops.windPlaying) {
+    console.log('[Audio] Wind already playing, skipping');
+    return; // Already playing, don't start another
+  }
+
+  console.log('[Audio] Starting new wind sound');
+
   // Stop existing wind sound if any
   if (audio.loops.wind) {
-    audio.loops.wind.stop();
+    try {
+      audio.loops.wind.stop();
+      audio.loops.wind.disconnect();
+    } catch (e) {
+      // Already stopped/disconnected
+    }
+    audio.loops.wind = null;
+  }
+  if (audio.loops.windBandpass) {
+    try {
+      audio.loops.windBandpass.disconnect();
+    } catch (e) {
+      // Already disconnected
+    }
+    audio.loops.windBandpass = null;
+  }
+  if (audio.loops.windFilter) {
+    try {
+      audio.loops.windFilter.disconnect();
+    } catch (e) {
+      // Already disconnected
+    }
+    audio.loops.windFilter = null;
+  }
+  if (audio.loops.windGain) {
+    try {
+      audio.loops.windGain.disconnect();
+    } catch (e) {
+      // Already disconnected
+    }
+    audio.loops.windGain = null;
   }
 
   // Create white noise for wind
@@ -62,7 +117,7 @@ export function playWindSound(ctx) {
   lowpass.frequency.value = 3000;
 
   const windGain = ac.createGain();
-  windGain.gain.value = 0.15;
+  windGain.gain.value = 0.005;
 
   whiteNoise.connect(bandpass);
   bandpass.connect(lowpass);
@@ -72,8 +127,10 @@ export function playWindSound(ctx) {
   whiteNoise.start();
 
   audio.loops.wind = whiteNoise;
+  audio.loops.windBandpass = bandpass;
   audio.loops.windFilter = lowpass;
   audio.loops.windGain = windGain;
+  audio.loops.windPlaying = true;
 }
 
 export function updateWindSound(ctx, speed, verticalVelocity) {
@@ -84,10 +141,10 @@ export function updateWindSound(ctx, speed, verticalVelocity) {
 
   // Increase pitch and volume when going faster or diving
   const targetFreq = 2000 + normalizedSpeed * 2000 + (isDiving ? 1000 : 0);
-  const targetVolume = 0.1 + normalizedSpeed * 0.15 + (isDiving ? 0.1 : 0);
+  const targetVolume = 0.005 + normalizedSpeed * 0.015 + (isDiving ? 0.01 : 0);
 
   ctx.audio.loops.windFilter.frequency.value = targetFreq;
-  ctx.audio.loops.windGain.gain.value = Math.min(targetVolume, 0.35);
+  ctx.audio.loops.windGain.gain.value = Math.min(targetVolume, 0.04);
 }
 
 export function playDingSound(ctx, distance) {
@@ -157,7 +214,22 @@ export function playWeeSound(ctx) {
   const ac = ctx.audio.context;
   const now = ac.currentTime;
 
-  // Create a descending pitch "WEEEEE" sound
+  // Use custom recorded sound if available
+  if (ctx.audio.sounds.wee) {
+    const source = ac.createBufferSource();
+    source.buffer = ctx.audio.sounds.wee;
+
+    const gain = ac.createGain();
+    gain.gain.value = 0.5;
+
+    source.connect(gain);
+    gain.connect(ctx.audio.masterGain);
+
+    source.start(now);
+    return;
+  }
+
+  // Fallback to synthesized sound
   const osc = ac.createOscillator();
   osc.type = 'sawtooth';
 
@@ -193,9 +265,39 @@ export function stopAllSounds(ctx) {
 
   // Stop all looping sounds
   if (ctx.audio.loops.wind) {
-    ctx.audio.loops.wind.stop();
+    try {
+      ctx.audio.loops.wind.stop();
+      ctx.audio.loops.wind.disconnect();
+    } catch (e) {
+      // Already stopped
+    }
     ctx.audio.loops.wind = null;
   }
+  if (ctx.audio.loops.windBandpass) {
+    try {
+      ctx.audio.loops.windBandpass.disconnect();
+    } catch (e) {
+      // Already disconnected
+    }
+    ctx.audio.loops.windBandpass = null;
+  }
+  if (ctx.audio.loops.windFilter) {
+    try {
+      ctx.audio.loops.windFilter.disconnect();
+    } catch (e) {
+      // Already disconnected
+    }
+    ctx.audio.loops.windFilter = null;
+  }
+  if (ctx.audio.loops.windGain) {
+    try {
+      ctx.audio.loops.windGain.disconnect();
+    } catch (e) {
+      // Already disconnected
+    }
+    ctx.audio.loops.windGain = null;
+  }
+  ctx.audio.loops.windPlaying = false;
 }
 
 export function setVolume(ctx, volume) {
