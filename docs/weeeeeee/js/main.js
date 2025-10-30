@@ -1,6 +1,4 @@
-// Cache buster: Change this version number to force users to get new JS files
-// Update this in one place, and all imports will use the new version
-const V = '4';
+// Cache buster: To force users to get new JS files, find/replace ?v=4 with ?v=5 (etc) in the imports below and in index.html
 
 import { setupWorld, updateWorld, getNearestDistance, resetWorld, setWorldQuality } from './world.js?v=4';
 import { setupPlayer, updatePlayer, getPlayerInfo, resetPlayer } from './player.js?v=4';
