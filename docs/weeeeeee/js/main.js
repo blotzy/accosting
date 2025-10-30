@@ -1,13 +1,14 @@
-// Get the version parameter from this script's own URL
-const V = new URLSearchParams(new URL(import.meta.url).search).get('v') || '1';
+// Cache buster: Change this version number to force users to get new JS files
+// Update this in one place, and all imports will use the new version
+const V = '4';
 
-import { setupWorld, updateWorld, getNearestDistance, resetWorld, setWorldQuality } from `./world.js?v=${V}`;
-import { setupPlayer, updatePlayer, getPlayerInfo, resetPlayer } from `./player.js?v=${V}`;
-import { setupUI, updateUI } from `./ui.js?v=${V}`;
-import { Scoring } from `./scoring.js?v=${V}`;
-import { autoScaleQualityTick } from `./perf.js?v=${V}`;
-import { getConfig } from `./config.js?v=${V}`;
-import { setupAudio, playWindSound, updateWindSound, playDingSound, playCrashSound, playWeeSound, stopAllSounds } from `./audio.js?v=${V}`;
+import { setupWorld, updateWorld, getNearestDistance, resetWorld, setWorldQuality } from './world.js?v=4';
+import { setupPlayer, updatePlayer, getPlayerInfo, resetPlayer } from './player.js?v=4';
+import { setupUI, updateUI } from './ui.js?v=4';
+import { Scoring } from './scoring.js?v=4';
+import { autoScaleQualityTick } from './perf.js?v=4';
+import { getConfig } from './config.js?v=4';
+import { setupAudio, playWindSound, updateWindSound, playDingSound, playCrashSound, playWeeSound, stopAllSounds } from './audio.js?v=4';
 
 const config = getConfig();
 
