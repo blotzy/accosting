@@ -12,210 +12,135 @@
     }
 
     body {
-      font-family: 'Courier New', monospace;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      background: #1d1f21;
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      overflow-x: hidden;
     }
 
-    h1 {
-      color: white;
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-      animation: fadeInDown 0.8s ease-out;
-    }
-
-    .subtitle {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 1.2rem;
-      margin-bottom: 3rem;
-      animation: fadeInDown 0.8s ease-out 0.2s backwards;
-    }
-
-    .widget-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      max-width: 1200px;
+    .terminal {
+      background: #282c34;
+      border-radius: 8px;
+      max-width: 600px;
       width: 100%;
-      animation: fadeIn 1s ease-out 0.4s backwards;
-    }
-
-    .widget {
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       overflow: hidden;
     }
 
-    .widget:hover {
-      transform: translateY(-10px) rotate(1deg);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    .terminal-header {
+      background: #3c4049;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .widget::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
+    .terminal-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
     }
 
-    .widget:hover::before {
-      opacity: 1;
+    .terminal-btn.close { background: #ff5f56; }
+    .terminal-btn.minimize { background: #ffbd2e; }
+    .terminal-btn.maximize { background: #27c93f; }
+
+    .terminal-title {
+      flex: 1;
+      text-align: center;
+      color: #9da5b4;
+      font-size: 13px;
+      margin-right: 52px;
     }
 
-    .widget-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      display: block;
+    .terminal-body {
+      padding: 20px;
+      color: #abb2bf;
+      line-height: 1.7;
     }
 
-    .widget h2 {
-      color: #667eea;
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
+    .prompt {
+      color: #98c379;
     }
 
-    .widget p {
-      color: #666;
-      line-height: 1.6;
+    .command {
+      color: #61afef;
     }
 
-    .widget a {
-      color: inherit;
-      text-decoration: none;
-      display: block;
+    .output {
+      margin: 12px 0 20px 0;
+      padding-left: 0;
     }
 
-    .widget-link {
-      display: inline-block;
-      margin-top: 1rem;
-      color: #667eea;
+    .name {
+      color: #e5c07b;
+      font-size: 1.4rem;
       font-weight: bold;
-      border-bottom: 2px solid transparent;
-      transition: border-color 0.3s ease;
     }
 
-    .widget-link:hover {
-      border-color: #667eea;
+    .link {
+      color: #61afef;
+      text-decoration: none;
+      transition: color 0.2s;
     }
 
-    .iou-note {
-      background: #fff9c4;
-      border-left: 4px solid #ffd54f;
-      padding: 15px;
-      margin-top: 15px;
-      font-style: italic;
-      color: #666;
-      transform: rotate(-1deg);
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    .link:hover {
+      color: #98c379;
     }
 
-    .contact-email {
-      background: #f0f0f0;
-      padding: 10px 15px;
-      border-radius: 6px;
-      margin-top: 10px;
-      font-family: 'Courier New', monospace;
-      color: #333;
-      word-break: break-all;
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: #528bff;
+      margin-left: 4px;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
     }
 
-    /* Animation keyframes */
-    @keyframes fadeInDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes blink {
+      50% { opacity: 0; }
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
+    @media (max-width: 640px) {
+      .terminal {
+        border-radius: 0;
       }
-      to {
-        opacity: 1;
-      }
-    }
-
-    .widget:nth-child(1) { animation-delay: 0.5s; }
-    .widget:nth-child(2) { animation-delay: 0.6s; }
-    .widget:nth-child(3) { animation-delay: 0.7s; }
-
-    .widget {
-      animation: fadeInUp 0.6s ease-out backwards;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2rem;
-      }
-      .subtitle {
-        font-size: 1rem;
-      }
-      .widget-grid {
-        grid-template-columns: 1fr;
+      .name {
+        font-size: 1.2rem;
       }
     }
   </style>
 </head>
 <body>
-  <h1>Richard Acosta</h1>
-  <p class="subtitle">Digital playground & portfolio</p>
-
-  <div class="widget-grid">
-    <!-- Resume Widget -->
-    <div class="widget" onclick="window.open('./files/racosta-resume.pdf', '_blank')">
-      <span class="widget-icon">📄</span>
-      <h2>Resume</h2>
-      <p>Check out my professional experience and skills.</p>
-      <span class="widget-link">View PDF →</span>
+  <div class="terminal">
+    <div class="terminal-header">
+      <div class="terminal-btn close"></div>
+      <div class="terminal-btn minimize"></div>
+      <div class="terminal-btn maximize"></div>
+      <div class="terminal-title">accosting.us</div>
     </div>
+    <div class="terminal-body">
+      <div>
+        <span class="prompt">$</span> <span class="command">whoami</span>
+      </div>
+      <div class="output">
+        <span class="name">Richard Acosta</span>
+      </div>
 
-    <!-- Contact Widget -->
-    <div class="widget">
-      <span class="widget-icon">📧</span>
-      <h2>Contact</h2>
-      <p>Let's work together!</p>
-      <div class="contact-email">hire@accosting.us</div>
-    </div>
+      <div>
+        <span class="prompt">$</span> <span class="command">echo $EMAIL</span>
+      </div>
+      <div class="output">
+        <a href="mailto:hire@accosting.us" class="link">hire@accosting.us</a>
+      </div>
 
-    <!-- WEEEEEEE Game Widget -->
-    <div class="widget" onclick="window.location.href='./weeeeeee/'">
-      <span class="widget-icon">✈️</span>
-      <h2>WEEEEEEE!</h2>
-      <p>WEEEEEEEEEEEEEEE!</p>
-      <span class="widget-link">Play Now →</span>
+      <div>
+        <a href="./files/racosta-resume.pdf" target="_blank" class="link"><span class="prompt">$</span> <span class="command">open resume.pdf</span><span class="cursor"></span></a>
+      </div>
     </div>
   </div>
 </body>
